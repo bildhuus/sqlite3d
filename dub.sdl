@@ -1,0 +1,17 @@
+name "sqlite3d"
+description "SQLite as a D package"
+license "public domain"
+copyright "The SQLite library, as well as this package are in the public domain"
+targetType "library"
+extraDependecyFiles "sqlite3.c"
+
+# Build with MSVC on Windows
+preBuildCommands "cl /nologo /c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c" platform="windows"
+sourceFiles "sqlite3.obj" platform="windows"
+libs "kernel32" platform="windows"
+
+# Use Clang on all other systems
+preBuildCommands "clang -c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c -arch=x86" platform="posix-x86"
+preBuildCommands "clang -c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c -arch=x86-64" platform="posix-x86_64"
+preBuildCommands "clang -c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c -arch=arm64" platform="posix-aarch64"
+sourceFiles "sqlite3.o" platform="posix"
