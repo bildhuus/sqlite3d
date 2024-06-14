@@ -1,0 +1,94 @@
+name: CI
+
+# Only triggers on pushes/PRs to master
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+      - github_actions
+
+jobs:
+  test-linux:
+    name: Unittests Linux
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        dc: [dmd-latest, ldc-latest]
+        arch: [x86_64]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install D compiler
+        uses: dlang-community/setup-dlang@v1
+        with:
+            compiler: ${{ matrix.dc }}
+
+      - name: Install gcc-multilib
+        run: |
+          sudo apt update
+          sudo apt install gcc-multilib -y
+
+      - name: Run tests
+        env:
+          ARCH: ${{matrix.arch}}
+        run: ./test.sh
+        shell: bash
+  test-macos:
+    name: Unittests macOS
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macOS-13]
+        dc: [dmd-latest, ldc-latest]
+        arch: [x86_64]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install D compiler
+        uses: dlang-community/setup-dlang@v1
+        with:
+            compiler: ${{ matrix.dc }}
+
+      - name: Run tests
+        env:
+          ARCH: ${{matrix.arch}}
+        run: ./test.sh
+        shell: bash
+  test-windows:
+    name: Unittests Windows
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        dc: [dmd-latest, ldc-latest]
+        arch: [x86_64]
+        include:
+          - { os: windows-latest, dc: dmd-latest, arch: x86_mscoff }
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install D compiler
+        uses: dlang-community/setup-dlang@v2
+        with:
+            compiler: ${{ matrix.dc }}
+
+      - name: Run tests
+        env:
+          ARCH: ${{matrix.arch}}
+        run: ./test.sh
+        shell: bash
