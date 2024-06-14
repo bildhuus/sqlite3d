@@ -6,12 +6,20 @@ targetType "library"
 extraDependecyFiles "sqlite3.c"
 
 # Build with MSVC on Windows
-preBuildCommands "cl /nologo /c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c" platform="windows"
-sourceFiles "sqlite3.obj" platform="windows"
+preBuildCommands "cl /nologo /Ox /MT /c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c /Fo:sqlite3-${ARCH}.obj" platform="windows"
+sourceFiles "sqlite3-${ARCH}.obj" platform="windows"
 libs "kernel32" platform="windows"
 
 # Use Clang on all other systems
-preBuildCommands "clang -c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c -arch=x86" platform="posix-x86"
-preBuildCommands "clang -c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c -arch=x86-64" platform="posix-x86_64"
-preBuildCommands "clang -c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c -arch=arm64" platform="posix-aarch64"
-sourceFiles "sqlite3.o" platform="posix"
+# Linux
+preBuildCommands "clang -c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c --target=i386 -fPIC -o sqlite3-${PLATFORM}-${ARCH}.o" platform="linux-x86"
+preBuildCommands "clang -c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c --target=x86_64 -fPIC -o sqlite3-${PLATFORM}-${ARCH}.o" platform="linux-x86_64"
+preBuildCommands "clang -c ${SQLITE3D_PACKAGE_DIR}/sqlite3.c --target=arm64 -fPIC -o sqlite3-${PLATFORM}-${ARCH}.o" platform="linux-aarch64"
+# macOS
+preBuildCommands "xcrun clang -isysroot \"`xcrun --show-sdk-path`\" -c \"${SQLITE3D_PACKAGE_DIR}/sqlite3.c\" --target=x86_64-apple-darwin -fPIC -o sqlite3-${PLATFORM}-${ARCH}.o" platform="osx-x86_64"
+preBuildCommands "xcrun clang -isysroot \"`xcrun --show-sdk-path`\" -c \"${SQLITE3D_PACKAGE_DIR}/sqlite3.c\" --target=arm64-apple-darwin -fPIC -o sqlite3-${PLATFORM}-${ARCH}.o" platform="osx-aarch64"
+# iOS
+preBuildCommands "xcrun clang -isysroot \"`xcrun --show-sdk-path`\" -c \"${SQLITE3D_PACKAGE_DIR}/sqlite3.c\" --target=x86_64-apple-ios-simulator -fPIC -o sqlite3-${PLATFORM}-${ARCH}.o" platform="ios-x86_64"
+preBuildCommands "xcrun clang -isysroot \"`xcrun --show-sdk-path`\" -c \"${SQLITE3D_PACKAGE_DIR}/sqlite3.c\" --target=arm64-apple-ios -fPIC -o sqlite3-${PLATFORM}-${ARCH}.o" platform="ios-aarch64"
+
+sourceFiles "sqlite3-${PLATFORM}-${ARCH}.o" platform="posix"
