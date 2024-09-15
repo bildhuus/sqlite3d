@@ -2,3 +2,6 @@
 *.obj
 *.a
 *.lib
+*.exe
+*.pdb
+.dub/
